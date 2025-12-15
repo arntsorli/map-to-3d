@@ -3,12 +3,14 @@ import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer
 import { OutlinePass } from "three/examples/jsm/postprocessing/OutlinePass";
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass";
 import { OutputPass } from "three/examples/jsm/postprocessing/OutputPass";
+import {ChromaticVignettePass} from "./passes/chromatic-vignette-pass";
 
 export class RenderPipeline {
   private effectComposer: EffectComposer;
   private renderPass: RenderPass;
   private outlinePass: OutlinePass;
   private renderer: THREE.WebGLRenderer;
+  private customPass: ChromaticVignettePass;
 
   constructor(
     private scene: THREE.Scene,
@@ -36,6 +38,8 @@ export class RenderPipeline {
     // Initial render acts as input for next pass
     this.renderPass = new RenderPass(scene, camera);
     this.effectComposer.addPass(this.renderPass);
+    this.customPass = new ChromaticVignettePass();
+    this.effectComposer.addPass(this.customPass)
 
     // Outline pass
     this.outlinePass = new OutlinePass(
@@ -50,6 +54,14 @@ export class RenderPipeline {
     this.effectComposer.addPass(this.outlinePass);
 
     this.effectComposer.addPass(new OutputPass());
+
+    document.addEventListener('keyup', this.togglePass);
+  }
+
+  togglePass = (event: KeyboardEvent) => {
+    if (event.key !== 't') return;
+    this.customPass.enabled = !this.customPass.enabled;
+    console.log('Toggled custom pass:', this.customPass.enabled);
   }
 
   get canvas() {
